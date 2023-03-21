@@ -5,25 +5,39 @@
       class="movies d-flex flex-column px-12"
       style="width: 95%; background-color: lightgreen"
     >
-      <v-card-title
-        class="text-h2 px-3 mt-5 mb-6"
-        style="color: rgb(18, 18, 18); line-height: 4rem !important"
-      >
-        {{ title }}
-      </v-card-title>
+      <div class="d-flex flex-row justify-space-between align-center my-6">
+        <v-card-title
+          class="text-h4 px-3"
+          style="color: rgb(18, 18, 18); line-height: 4rem !important"
+        >
+          {{ title }}
+        </v-card-title>
+        <v-btn color="primary" @click="dialog = true"> Open Dialog </v-btn>
+      </div>
+
       <movies-list @update-view="updateView"></movies-list>
     </v-card>
+    <v-dialog
+      v-model="dialog"
+      width="100%"
+      style="right: 50%; bottom: 70%; height: 70%"
+    >
+      <filter-sidebar @close-dialog="closeDialog()" />
+    </v-dialog>
   </div>
 </template>
 
 <script>
 import MoviesList from "@/components/movie/MoviesList.vue";
 import { useRouter, useRoute } from "vue-router";
-import { useStore } from "vuex";
+import { ref } from "vue";
+import FilterSidebar from "@/components/general/FilterSidebar.vue";
+import { useMoviesStore } from "@/stores/MoviesStore";
 
 export default {
   components: {
     MoviesList,
+    FilterSidebar,
   },
   props: {
     title: {
@@ -31,25 +45,37 @@ export default {
       type: String,
     },
   },
-  setup(props) {
-    console.log(props);
-    const store = useStore();
+  setup() {
+    const store = useMoviesStore();
     const router = useRouter();
     const route = useRoute();
+    const dialog = ref(false);
 
     const updateView = (page) => {
       let currRoute = route.name;
       let res = router.getRoutes().find((el) => el.name === currRoute);
 
       if (res.props.default) {
-        store.dispatch(res.props.default.method, page);
-        console.log("test");
+        const method = res.props.default.method;
+        store[`${method}`](page);
       }
+    };
+
+    const openDialog = () => {
+      console.log(dialog.value);
+      dialog.value = true;
+      console.log(dialog.value);
+    };
+    const closeDialog = () => {
+      dialog.value = false;
     };
 
     return {
       store,
+      dialog,
       updateView,
+      openDialog,
+      closeDialog,
     };
   },
 };

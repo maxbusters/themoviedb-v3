@@ -8,12 +8,13 @@
           v-for="(movie, inx) in movies"
           :key="inx"
           :movie="movie"
+          :colored="false"
         ></movie-card>
       </v-row>
       <v-pagination
         theme="dark"
         class="mt-10"
-        :length="200"
+        :length="count"
         :total-visible="10"
         v-model="currentPage"
       ></v-pagination>
@@ -28,9 +29,9 @@
 
 <script>
 import MovieCard from "@/components/movie/MovieCard.vue";
+import { useMoviesStore } from "@/stores/MoviesStore";
 import { watch, ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
-import { useStore } from "vuex";
 export default {
   components: {
     MovieCard,
@@ -38,7 +39,7 @@ export default {
   emits: ["update-view"],
   setup(props, { emit }) {
     const route = useRoute();
-    const store = useStore();
+    const store = useMoviesStore();
     let currentPage = ref(1);
 
     const updateView = function (page) {
@@ -46,14 +47,18 @@ export default {
     };
 
     const movies = computed(() => {
-      return store.getters.MOVIES;
+      return store.MOVIES;
     });
 
     const count = computed(() => {
-      if (store.getters.COUNT > 4000) {
-        return 4000;
+      if (store.COUNT > 4000) {
+        return 4000 / 20;
       } else {
-        return store.getters.COUNT;
+        if (parseInt(store.COUNT / 20) === store.COUNT / 20) {
+          return store.COUNT / 20;
+        } else {
+          return parseInt(store.COUNT / 20) + 1;
+        }
       }
     });
 

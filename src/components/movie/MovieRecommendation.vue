@@ -12,6 +12,7 @@
           v-for="(movie, inx) in recommendations"
           :key="inx"
           :movie="movie"
+          :colored="true"
         ></movie-card>
       </div>
     </div>
@@ -24,7 +25,9 @@
 <script>
 import config from "@/Config";
 import MovieCard from "./MovieCard.vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useMoviesStore } from "@/stores/MoviesStore";
 
 export default {
   components: {
@@ -34,11 +37,61 @@ export default {
     this.startComponent();
   },
   setup() {
+    const store = useMoviesStore();
+    const router = useRouter();
+    const route = useRoute();
+    ///////////////////////////////
     const imgPath = ref(config.IMG_URL);
     const noImgPath = ref(config.NO_IMG_SRC);
     const isDown = ref(false);
     const startX = ref(0);
     const scrollLeft = ref(0);
+
+    const imagePath = (name) => {
+      if (name === null) {
+        return "";
+      }
+      return config.IMG_URL + name;
+    };
+    const setNoImage = (path) => {
+      if (path === null) {
+        return "No image avaliable";
+      }
+    };
+    const openMovie = (id) => {
+      router.push(`/movies/${id}`, () => {});
+    };
+    const startComponent = () => {
+      store["GET_RECOMMENDATIONS_BY_ID"](route.params.id);
+    };
+    const onCardsMousedown = (e) => {
+      isDown.value = true;
+      slider.value.classList.add("active");
+      startX.value = e.pageX - slider.value.offsetLeft;
+      scrollLeft.value = slider.value.scrollLeft;
+    };
+    const onCardsMouseleave = () => {
+      isDown.value = false;
+      slider.value.classList.remove("active");
+    };
+    const onCardsMouseup = () => {
+      isDown.value = false;
+      slider.value.classList.remove("active");
+    };
+    const onCardsMousemove = (e) => {
+      if (!isDown.value) return;
+      e.preventDefault();
+      const x = e.pageX - slider.value.offsetLeft;
+      const walk = (x - startX.value) * 2; //scroll-fast
+      slider.value.scrollLeft = scrollLeft.value - walk;
+    };
+
+    const recommendations = computed(() => {
+      return store.RECOMMENDATIONS;
+    });
+    const slider = computed(() => {
+      return document.querySelector(".recommendation__cards");
+    });
 
     return {
       imgPath,
@@ -46,64 +99,17 @@ export default {
       isDown,
       startX,
       scrollLeft,
+      imagePath,
+      setNoImage,
+      openMovie,
+      startComponent,
+      onCardsMousedown,
+      onCardsMouseleave,
+      onCardsMouseup,
+      onCardsMousemove,
+      recommendations,
+      slider,
     };
-  },
-  // data() {
-  //   return {
-  //     imgPath: config.IMG_URL,
-  //     noImgPath: config.NO_IMG_SRC,
-  //     isDown: false,
-  //     startX: 0,
-  //     scrollLeft: 0,
-  //   };
-  // },
-  computed: {
-    recommendations() {
-      return this.$store.getters.RECOMMENDATIONS;
-    },
-    slider() {
-      return document.querySelector(".recommendation__cards");
-    },
-  },
-  methods: {
-    imagePath(name) {
-      if (name === null) {
-        return "";
-      }
-      return config.IMG_URL + name;
-    },
-    setNoImage(path) {
-      if (path === null) {
-        return "No image avaliable";
-      }
-    },
-    openMovie(id) {
-      this.$router.push(`/movies/${id}`, () => {});
-    },
-    startComponent() {
-      this.$store.dispatch("GET_RECOMMENDATIONS_BY_ID", this.$route.params.id);
-    },
-    onCardsMousedown(e) {
-      this.isDown = true;
-      this.slider.classList.add("active");
-      this.startX = e.pageX - this.slider.offsetLeft;
-      this.scrollLeft = this.slider.scrollLeft;
-    },
-    onCardsMouseleave() {
-      this.isDown = false;
-      this.slider.classList.remove("active");
-    },
-    onCardsMouseup() {
-      this.isDown = false;
-      this.slider.classList.remove("active");
-    },
-    onCardsMousemove(e) {
-      if (!this.isDown) return;
-      e.preventDefault();
-      const x = e.pageX - this.slider.offsetLeft;
-      const walk = (x - this.startX) * 2; //scroll-fast
-      this.slider.scrollLeft = this.scrollLeft - walk;
-    },
   },
 };
 </script>

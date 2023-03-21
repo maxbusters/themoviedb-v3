@@ -1,5 +1,9 @@
 <template>
-  <v-card class="card" @click="showDetails(movie.id)">
+  <v-card
+    class="card"
+    @click="showDetails(movie.id)"
+    :style="colored ? 'background-color: #e1e1e1' : ''"
+  >
     <div class="card__img-cont">
       <v-badge location="bottom right" color="green" style="min-height: 0px">
         <template #badge>
@@ -8,12 +12,12 @@
         <v-img
           v-if="movie.poster_path !== null"
           class="card__img"
-          :src="this.imgPath + movie.poster_path"
+          :src="imgPath + movie.poster_path"
         ></v-img>
         <v-img
           v-else
           class="card__img card__img--no-image"
-          :src="this.noImgPath"
+          :src="noImgPath"
         ></v-img>
       </v-badge>
     </div>
@@ -64,6 +68,10 @@ export default {
   props: {
     movie: {
       type: Object,
+      required: true,
+    },
+    colored: {
+      type: Boolean,
       required: true,
     },
   },

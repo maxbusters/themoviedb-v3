@@ -29,10 +29,9 @@ export default {
   },
   getFilteredMoviesByPage(page = 1, filter) {
     let query = `/discover/movie?api_key=${config.API_KEY}&page=${page}`;
-    let year = parseInt(filter.year.getFullYear());
 
-    if (!isNaN(year)) {
-      query += `&year=${year}&release_date.gte=${year}-01-01`;
+    if (!isNaN(filter.year)) {
+      query += `&year=${filter.year}&release_date.gte=${filter.year}-01-01`;
       if (!filter.sortBy) {
         query += `&sort_by=popularity.desc`;
       }
@@ -56,7 +55,7 @@ export default {
     if (filter.sortBy) {
       query += `&sort_by=${filter.sortBy}`;
     }
-
+    console.log(query);
     return axios.get(query);
   },
 };

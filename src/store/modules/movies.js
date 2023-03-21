@@ -2,7 +2,7 @@ import api from "../../api";
 
 const state = {
   filter: {
-    year: new Date(), //year
+    year: new Date().getFullYear(), //year
     genres: [], //with_genres
     rating: 10, //vote_averange.lte
   },

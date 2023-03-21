@@ -18,25 +18,25 @@
         "
         class="ml-10 py-10"
       >
+        <h1 class="text-white" style="font-size: 40px">THE MOVIE DB</h1>
         <router-view v-show="!loading" />
       </v-main>
     </v-layout>
   </div>
 </template>
 <script>
-import { useStore } from "vuex";
 import { computed } from "@vue/runtime-core";
 import MainNav from "./components/general/MainNav.vue";
+import { useMoviesStore } from "./stores/MoviesStore";
 export default {
   name: "App",
   components: {
     MainNav,
   },
   setup() {
-    const store = useStore();
-
+    const store = useMoviesStore();
     const loading = computed(() => {
-      return store.getters.LOADING;
+      return store.LOADING;
     });
 
     return {

@@ -41,12 +41,12 @@
       <v-divider></v-divider>
       <v-list-item v-if="drawer">
         <v-text-field
-          solo
+          class="mt-3"
           v-model="searchQuery"
-          placeholder="Search..."
-          single-line
           variant="outlined"
+          label="Search by name"
           color="green"
+          style="border-radius: 20px"
           hide-details
         ></v-text-field>
         <v-btn
@@ -62,21 +62,14 @@
 </template>
 
 <script>
-// import FilterSidebar from "@/components/general/FilterSidebar.vue";
 import config from "@/Config";
-import { useStore } from "vuex";
-import { computed, watch, ref } from "@vue/runtime-core";
+import { computed, watch, ref, onBeforeMount } from "@vue/runtime-core";
 import { useRoute, useRouter } from "vue-router";
+import { useMoviesStore } from "@/stores/MoviesStore";
 
 export default {
-  // components: {
-  //   // FilterSidebar,
-  // },
-  beforeMount() {
-    this.resetSearch();
-  },
   setup() {
-    const store = useStore();
+    const store = useMoviesStore();
     const route = useRoute();
     const router = useRouter();
     const logo = ref(config.LOGO);
@@ -85,11 +78,8 @@ export default {
     let validate = ref(false);
 
     const searchStart = () => {
-      store.commit("SET_DATA", {
-        name: "query",
-        value: searchQuery.value,
-      });
-      store.dispatch("GET_SEARCH_RESULTS_BY_PAGE", 1);
+      store.SET_QUERY(searchQuery.value);
+      store.GET_SEARCH_RESULTS_BY_PAGE(1);
       router.push("/search", () => {});
     };
 
@@ -107,10 +97,7 @@ export default {
 
     const resetSearch = () => {
       searchQuery.value = "";
-      store.commit("SET_DATA", {
-        name: "query",
-        value: searchQuery.value,
-      });
+      store.SET_QUERY("");
     };
 
     watch(searchQuery, () => {
@@ -120,6 +107,10 @@ export default {
       } else {
         validate.value = false;
       }
+    });
+
+    onBeforeMount(() => {
+      resetSearch();
     });
 
     return {

@@ -47,7 +47,8 @@
             <p class="text-md-left">{{ movie.overview }}</p>
           </div>
         </div>
-        <h4 class="font-weight-bold">Recommendation</h4>
+        <h4 class="font-weight-bold ml-10">Recommendation</h4>
+        <v-divider></v-divider>
         <v-row style="width: 95%; margin: 0 auto">
           <v-col>
             <movie-recommendation />
@@ -62,41 +63,53 @@
 import config from "../Config.js";
 import MovieRecommendation from "@/components/movie/MovieRecommendation.vue";
 import moment from "moment";
+import { watch, ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useMoviesStore } from "@/stores/MoviesStore";
 
 export default {
   components: {
     MovieRecommendation,
   },
-  data() {
-    return {
-      noImgSrc: config.NO_IMG_SRC,
-      imgPath: config.DET_IMG_URL,
-    };
-  },
-  created() {
-    this.startComponent();
-  },
-  computed: {
-    movie() {
-      return this.$store.getters.MOVIE;
-    },
-    rating() {
-      return parseFloat(this.movie.vote_average).toFixed(1);
-    },
-  },
-  watch: {
-    $route() {
-      this.startComponent();
-    },
-  },
-  methods: {
-    getFilteredDate(date) {
+  setup() {
+    const store = useMoviesStore();
+    const route = useRoute();
+    const noImgSrc = ref(config.NO_IMG_SRC);
+    const imgPath = ref(config.DET_IMG_URL);
+
+    const getFilteredDate = (date) => {
       return moment(date).format("MMMM, YYYY");
-    },
-    startComponent() {
-      this.$store.dispatch("GET_MOVIE_BY_ID", this.$route.params.id);
-      this.$store.dispatch("GET_RECOMMENDATIONS_BY_ID", this.$route.params.id);
-    },
+    };
+    const startComponent = () => {
+      if (route.params.id) {
+        store.GET_MOVIE_BY_ID(route.params.id);
+        store.GET_RECOMMENDATIONS_BY_ID(route.params.id);
+      }
+    };
+
+    watch(route, () => {
+      startComponent();
+    });
+
+    const movie = computed(() => {
+      return store.MOVIE;
+    });
+    const rating = computed(() => {
+      return parseFloat(movie.value.vote_average).toFixed(1);
+    });
+
+    onMounted(() => {
+      startComponent();
+    });
+
+    return {
+      noImgSrc,
+      imgPath,
+      getFilteredDate,
+      startComponent,
+      movie,
+      rating,
+    };
   },
 };
 </script>
